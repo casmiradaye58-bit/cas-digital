@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Administration — CAS DIGITAL</title>
+<meta name="robots" content="noindex,nofollow">
+<style>
+:root{--blue:#071b3a;--blue2:#0b5ed7;--green:#16a34a;--red:#dc2626;--bg:#f4f7fb;--border:#e2e8f0}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:#111827}
+header{background:var(--blue);color:#fff;padding:18px 0}.wrap{width:min(1180px,94%);margin:auto}
+.head{display:flex;justify-content:space-between;align-items:center;gap:20px}.head h1{margin:0;font-size:24px}.head p{margin:4px 0 0;color:#cbd5e1}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:7px}.primary{background:var(--blue2);color:#fff}.green{background:var(--green);color:#fff}.red{background:var(--red);color:#fff}.light{background:#eef2f7;color:#1e293b}
+main{padding:30px 0}.grid{display:grid;grid-template-columns:390px 1fr;gap:22px}.panel{background:#fff;border:1px solid var(--border);border-radius:16px;padding:20px;box-shadow:0 8px 25px rgba(7,27,58,.06)}h2{margin-top:0}
+label{display:block;font-size:13px;font-weight:800;margin:12px 0 6px}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}textarea{min-height:70px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.status{padding:10px;border-radius:9px;background:#ecfdf5;color:#166534;font-weight:700;margin-bottom:15px;display:none}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}.search{flex:1;min-width:200px}
+.table-wrap{overflow:auto}.product-row{display:grid;grid-template-columns:1.4fr .8fr .8fr .7fr auto;gap:10px;align-items:center;border-top:1px solid var(--border);padding:13px 0}.product-row:first-child{border-top:0}.small{font-size:12px;color:#64748b}.pill{font-size:11px;font-weight:800;padding:4px 7px;border-radius:99px;background:#e8f1ff;color:#0b5ed7}.off{background:#fee2e2;color:#991b1b}.empty{padding:35px;text-align:center;color:#64748b}
+.notice{font-size:13px;line-height:1.5;background:#fff7ed;border:1px solid #fed7aa;padding:12px;border-radius:10px;color:#9a3412;margin-bottom:20px}
+@media(max-width:850px){.grid{grid-template-columns:1fr}.product-row{grid-template-columns:1fr 1fr}.product-row .actions-cell{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header><div class="wrap head">
+<div><h1>CAS DIGITAL — Administration</h1><p>Gestion du catalogue ordinateurs</p></div>
+<a class="btn light" href="index.html">← Voir le site</a>
+</div></header>
+
+<main><div class="wrap">
+<div class="notice"><strong>Important :</strong> cette version enregistre les modifications dans le navigateur via localStorage. Pour que les mises à jour soient visibles par tous les visiteurs depuis n’importe quel appareil, il faudra ensuite connecter cette interface à une base de données / un hébergement avec backend.</div>
+<div id="status" class="status"></div>
+<div class="grid">
+<section class="panel">
+<h2 id="formTitle">Ajouter un ordinateur</h2>
+<form id="form">
+<input type="hidden" id="id">
+<label>Marque</label><input id="brand" required placeholder="HP">
+<label>Modèle</label><input id="model" required placeholder="EliteBook 840 G6">
+<div class="row"><div><label>Processeur</label><input id="cpu" placeholder="Core i5"></div><div><label>Génération</label><input id="generation" placeholder="8ème génération"></div></div>
+<div class="row"><div><label>RAM</label><input id="ram" placeholder="16 Go"></div><div><label>Stockage</label><input id="storage" placeholder="512 Go SSD"></div></div>
+<div class="row"><div><label>Écran</label><input id="screen" placeholder="14 pouces"></div><div><label>Carte graphique</label><input id="gpu" placeholder="Non précisé"></div></div>
+<div class="row"><div><label>Clavier</label><input id="keyboard" placeholder="AZERTY"></div><div><label>Prix (FCFA)</label><input id="price" type="number" min="0" required></div></div>
+<div class="row"><div><label>Disponibilité</label><select id="available"><option value="true">Disponible</option><option value="false">Indisponible</option></select></div><div><label>Promotion</label><select id="promo"><option value="false">Non</option><option value="true">Oui</option></select></div></div>
+<label>Photo (nom ou chemin relatif)</label><input id="image" placeholder="assets/mon-ordinateur.jpg">
+<div class="actions"><button class="btn primary" type="submit">Enregistrer</button><button class="btn light" type="button" onclick="resetForm()">Nouveau</button></div>
+</form>
+</section>
+
+<section class="panel">
+<h2>Ordinateurs</h2>
+<div class="toolbar"><input class="search" id="search" placeholder="Rechercher…"><button class="btn green" onclick="exportJSON()">Exporter le catalogue</button><label class="btn light" style="margin:0;cursor:pointer">Importer JSON<input id="importFile" type="file" accept=".json" hidden></label></div>
+<div id="list"></div>
+</section>
+</div></div></main>
+
+<script>
+const DEFAULT_PRODUCTS=[{"id": "hp-elitebook-640-g10", "brand": "HP", "model": "EliteBook 640 G10", "cpu": "Core i7", "generation": "13ème génération", "ram": "16 Go", "storage": "512 Go SSD", "screen": "Non précisé", "gpu": "Iris Xe Graphics : 08 Go", "keyboard": "Non précisé", "price": 450000, "available": true, "promo": false}, {"id": "hp-elitebook-840-g7", "brand": "HP", "model": "EliteBook 840 G7", "cpu": "Core i7", "generation": "Non précisée", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 300000, "available": true, "promo": false}, {"id": "hp-elitebook-840-g8", "brand": "HP", "model": "EliteBook 840 G8", "cpu": "Core i7", "generation": "11ème génération", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 320000, "available": true, "promo": false}, {"id": "hp-probook-440-g7", "brand": "HP", "model": "ProBook 440 G7", "cpu": "Core i5", "generation": "10ème génération", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 259000, "available": true, "promo": false}, {"id": "hp-probook-430-g8", "brand": "HP", "model": "ProBook 430 G8", "cpu": "Core i5", "generation": "11ème génération", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 279000, "available": true, "promo": false}, {"id": "hp-elitebook-850-g3", "brand": "HP", "model": "EliteBook 850 G3", "cpu": "Core i5", "generation": "6ème génération", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 189000, "available": true, "promo": false}, {"id": "dell-latitude-5510", "brand": "Dell", "model": "Latitude 5510", "cpu": "Core i7", "generation": "Non précisée", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 319000, "available": true, "promo": false}, {"id": "dell-latitude-3520", "brand": "Dell", "model": "Latitude 3520", "cpu": "Core i5", "generation": "11ème génération", "ram": "16 Go", "storage": "512 Go SSD", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 249000, "available": true, "promo": false}, {"id": "hp-elitebook-840-g6", "brand": "HP", "model": "EliteBook 840 G6", "cpu": "Core i5", "generation": "8ème génération", "ram": "16 Go", "storage": "512 Go SSD", "screen": "14 pouces", "gpu": "Non précisé", "keyboard": "AZERTY", "price": 249000, "available": true, "promo": false}, {"id": "hp-x360-i5", "brand": "HP", "model": "Tactile Convertible x360", "cpu": "Core i5-8350U", "generation": "8ème génération", "ram": "Non précisé", "storage": "Non précisé", "screen": "Non précisé", "gpu": "Non précisé", "keyboard": "Non précisé", "price": 145000, "available": true, "promo": false}];
+let products=(()=>{try{const x=localStorage.getItem('casDigitalProducts');return x?JSON.parse(x):DEFAULT_PRODUCTS}catch(e){return DEFAULT_PRODUCTS}})();
+const $=id=>document.getElementById(id);
+const bool=v=>String(v)==='true';
+function save(){localStorage.setItem('casDigitalProducts',JSON.stringify(products)); show('Catalogue enregistré sur cet appareil.');}
+function show(t){$('status').textContent=t;$('status').style.display='block';clearTimeout(window.st);window.st=setTimeout(()=>{$('status').style.display='none'},3500)}
+function slug(s){return s.toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function resetForm(){ $('form').reset(); $('id').value=''; $('available').value='true'; $('promo').value='false'; $('formTitle').textContent='Ajouter un ordinateur';}
+function edit(id){const p=products.find(x=>x.id===id);if(!p)return;Object.keys(p).forEach(k=>{const e=$(k);if(e)e.value=(typeof p[k]==='boolean'?String(p[k]):p[k])});$('id').value=p.id;$('formTitle').textContent='Modifier : '+p.brand+' '+p.model;window.scrollTo({top:0,behavior:'smooth'})}
+function removeProduct(id){const p=products.find(x=>x.id===id);if(!p)return;if(confirm('Supprimer '+p.brand+' '+p.model+' ?')){products=products.filter(x=>x.id!==id);save();render()}}
+$('form').addEventListener('submit',e=>{e.preventDefault();const id=$('id').value||slug($('brand').value+'-'+$('model').value);const p={id,brand:$('brand').value.trim(),model:$('model').value.trim(),cpu:$('cpu').value.trim()||'Non précisé',generation:$('generation').value.trim()||'Non précisée',ram:$('ram').value.trim()||'Non précisé',storage:$('storage').value.trim()||'Non précisé',screen:$('screen').value.trim()||'Non précisé',gpu:$('gpu').value.trim()||'Non précisé',keyboard:$('keyboard').value.trim()||'Non précisé',price:Number($('price').value),available:bool($('available').value),promo:bool($('promo').value),image:$('image').value.trim()||''};const i=products.findIndex(x=>x.id===id);if(i>=0)products[i]=p;else products.unshift(p);save();render();resetForm();});
+$('search').addEventListener('input',render);
+$('importFile').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(!Array.isArray(x))throw Error();products=x;save();render();}catch(err){alert('Fichier JSON invalide.')}};r.readAsText(f)});
+function exportJSON(){const blob=new Blob([JSON.stringify(products,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='catalogue-cas-digital.json';a.click();URL.revokeObjectURL(a.href)}
+function render(){const q=$('search').value.toLowerCase().trim();const list=products.filter(p=>(p.brand+' '+p.model+' '+p.cpu).toLowerCase().includes(q));if(!list.length){$('list').innerHTML='<div class="empty">Aucun ordinateur trouvé.</div>';return}$('list').innerHTML=list.map(p=>`<div class="product-row"><div><strong>${p.brand} ${p.model}</strong><div class="small">${p.cpu} • ${p.ram} • ${p.storage}</div></div><div><strong>${new Intl.NumberFormat('fr-FR').format(p.price)} FCFA</strong></div><div><span class="pill ${p.available?'':'off'}">${p.available?'Disponible':'Indisponible'}</span></div><div>${p.promo?'<span class="pill">PROMO</span>':''}</div><div class="actions-cell"><button class="btn light" onclick="edit('${p.id}')">Modifier</button> <button class="btn red" onclick="removeProduct('${p.id}')">Supprimer</button></div></div>`).join('')}
+render();
+</script>
+</body></html>
